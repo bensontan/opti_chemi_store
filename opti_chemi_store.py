@@ -14,9 +14,11 @@ class opti_chemi_store(object):
 	def spend(self, cash=0, points=0):
 
 		if (cash < self.entrycost) and (points < self.xchgpoints or cash < self.xtrafee):
-			return [0, 0, 0, ''] # dish, point, cash spent, cash left, order sequence 
+			return [0, 0, 0, ''] # dish, point, cash spent, order sequence 
 
 		cashpoints = str(cash) + '.' + str(points)
+
+		# use a hash to record all caculated optimized results, to reduce redundant calculation 
 		if self.maxdishes.has_key(cashpoints):
 			return self.maxdishes[cashpoints]
 
@@ -38,15 +40,25 @@ class opti_chemi_store(object):
 			# points after exchange
 			currpoints = points - self.xchgpoints * j + max(int((currspend - self.entrycost) / self.inccost), 0)
 
-			i = 0
-			k = 0
+			i = 0 # additional money will be spent
+			k = 0 # points will be exchanged
 			while (i < currcash):
 				if j > 0 or i != 0:
 					ret = self.spend(currcash - i, currpoints + k)
-					purchasedishes.append([currdish + ret[0], currpoints + k - points + ret[1], currspend + i + ret[2], 
-						self.purchase_message(j, currpoints + k - points + j * self.xchgpoints, 
-							currpoints + k, currspend + i, cash - currspend - i) + ret[3]])
 
+					purchasedishes.append([
+						currdish + ret[0], # dish
+						currpoints + k - points + ret[1], # points
+						currspend + i + ret[2], # cash spent
+						self.purchase_message( # order sequence
+							j, # exchange dishes
+							currpoints + k - points + j * self.xchgpoints, # new points
+							currpoints + k, # net points
+							currspend + i, # spent
+							cash - currspend - i) + # left 
+							ret[3]]) # the left steps from the remaining money thru recursive calls
+
+				# calculate for next amount of spends to get next point
 				i = max(int((i + currspend - self.entrycost) / self.inccost + 1), 0) * self.inccost + self.entrycost - currspend
 				k = k + 1
 
