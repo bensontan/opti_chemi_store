@@ -1,4 +1,4 @@
-
+<p>
 > python opti_chemi_store.py
 
 Budget: 1000
@@ -39,3 +39,4 @@ xchgpoints - how many points can exchange gift with xtrafee.
 
 Use the editor and modify it at line#3 in opti_chemi_store.py
 
+</p>
